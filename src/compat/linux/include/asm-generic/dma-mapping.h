@@ -60,8 +60,8 @@ static inline void dma_free_coherent(struct device *dev, size_t size,
 	sysfree(cpu_addr);
 }
 
-static inline dma_addr_t dma_map_single( struct device *dev, void *ptr, size_t size,
-                           enum dma_data_direction direction ) {
+static inline dma_addr_t dma_map_single(struct device *dev, void *ptr, size_t size,
+                           enum dma_data_direction direction) {
 #ifdef __mips__
 	return (uintptr_t)ptr - 0xA0000000;
 #else
@@ -69,8 +69,8 @@ static inline dma_addr_t dma_map_single( struct device *dev, void *ptr, size_t s
 #endif
 }
 
-static inline void dma_unmap_single( struct device *dev, dma_addr_t dma_handle, size_t size,
-                       enum dma_data_direction direction ) {
+static inline void dma_unmap_single(struct device *dev, dma_addr_t dma_handle, size_t size,
+                       enum dma_data_direction direction) {
 	return;
 }
 
