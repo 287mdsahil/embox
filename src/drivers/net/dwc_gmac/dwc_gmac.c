@@ -453,7 +453,7 @@ static inline int dwc_rxfinish_locked(struct net_device *dev_id) {
 			log_error("couldn't allocate skb");
 			return -ENOMEM;
 		}
-		memcpy(skb_data_cast_in(skb->data), &rx_buffers[cur_desc][0]/*(void *)desc->basic.des2*/, len);
+		memcpy(skb_data_cast_in(skb->data), &rx_buffers[cur_desc][0], len);
 
 		skb->len = len - 4; /* without CRC */
 		skb->dev = dev_id;
