@@ -172,11 +172,13 @@ static int dwc_open(struct net_device *dev) {
 static int dwc_setup_txdesc(struct dwc_priv *priv, int idx, uint32_t buff,
 		int len) {
 	struct dma_extended_desc *desc;
+	struct dma_extended_desc *desc_phy;
 
 	assert(idx < TX_DESC_QUANTITY);
 
 	desc = &priv->txdesc_ring[idx];
-	log_debug("txdesc_ring (%p): %d",  &((struct dma_extended_desc *)priv->txdesc_ring_dma)[idx], idx);
+	desc_phy = (struct dma_extended_desc *)priv->txdesc_ring_dma;
+	log_debug("txdesc_ring (%p): %d",  &desc_phy[idx], idx);
 	desc->basic.des2 = dma_map_single(NULL, (void *)(uintptr_t)buff, len, DMA_TO_DEVICE);
 	desc->basic.des1 = len & 0x1FFF;
 
@@ -191,7 +193,7 @@ static int dwc_setup_txdesc(struct dwc_priv *priv, int idx, uint32_t buff,
 	idx++;
 	idx %= TX_DESC_QUANTITY;
 
-	desc->basic.des3 = (uint32_t) &((struct dma_extended_desc *)priv->txdesc_ring_dma)[idx];
+	desc->basic.des3 = (uint32_t) &desc_phy[idx];
 
 	data_mem_barrier();
 	desc->basic.des0 |= TDES0_OWN;
@@ -398,6 +400,7 @@ static const struct net_driver dwc_drv_ops = {
 
 static uint32_t dwc_setup_rxdesc(struct dwc_priv *priv, int idx) {
 	struct dma_extended_desc *desc;
+	struct dma_extended_desc *desc_phy;
 
 	assert(idx < RX_DESC_QUANTITY);
 
@@ -411,7 +414,8 @@ static uint32_t dwc_setup_rxdesc(struct dwc_priv *priv, int idx) {
 
 	idx++;
 	idx %= RX_DESC_QUANTITY;
-	desc->basic.des3 = (uint32_t)&((struct dma_extended_desc *)priv->rxdesc_ring_dma)[idx];
+	desc_phy = (struct dma_extended_desc *)priv->rxdesc_ring_dma;
+	desc->basic.des3 = (uint32_t)&desc_phy[idx];
 
 	data_mem_barrier();
 	desc->basic.des0 = RDES0_OWN;
@@ -449,7 +453,7 @@ static inline int dwc_rxfinish_locked(struct net_device *dev_id) {
 			log_error("couldn't allocate skb");
 			return -ENOMEM;
 		}
-		memcpy(skb_data_cast_in(skb->data), (void *)desc->basic.des2, len);
+		memcpy(skb_data_cast_in(skb->data), &rx_buffers[cur_desc][0]/*(void *)desc->basic.des2*/, len);
 
 		skb->len = len - 4; /* without CRC */
 		skb->dev = dev_id;
